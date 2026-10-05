@@ -16,8 +16,9 @@ gold answer. A predictor that always picks the commonest training label is
 blind. One that picks by the length of the question is not, and if I use
 anything like it, it gets reported in a separate tier so the two cannot mix.
 
-Nothing below has been measured yet. When a measured number appears in this file
-it will come from a committed artifact, and until then there are none.
+Nothing below has been measured in this repository yet. When a measured number
+appears in this file it will come from a committed artifact, and until then
+there are none.
 
 ## Where the idea came from
 
@@ -49,10 +50,16 @@ per-category accuracies, and it is here because averaging lets a category that
 rewards doing nothing count towards the headline like any other. HumanEval's
 pass@1 is neither as well, which is why it is the control. That leaves the
 claim, as worded, with less to stand on in the live benchmarks than the first
-paragraph suggests. LegalBench's remaining tasks are scored with plain accuracy
-or F1, and BFCL's way in is the average. If a floor turns up there, it will have
-come through class balance and averaging rather than through recall, and the
-claim gets reworded to say so.
+paragraph suggests. What it does have on LegalBench is small. Each of
+LegalBench's 162 tasks is scored with its own metric, so there the claim is
+tested task by task. 155 use balanced accuracy, one is graded by hand, and of
+the six left, five fit the claim: two count an answer correct when one part of
+it matches the gold, with nothing charged for the rest, and three score F1
+between the gold and the generated answers split on commas. The task names and
+how each is scored are in [docs/pre-registration.md](docs/pre-registration.md).
+BFCL's way in is the average. If a floor turns up through class balance or
+averaging rather than through those five tasks, the claim gets reworded to say
+so.
 
 Four is the plan and three is what I expect to finish. A repository with three
 benchmarks and an honest table is better than a framework with no numbers.
