@@ -1,0 +1,128 @@
+# Words this project does not use in prose
+
+Enforced by `scripts/check_fingerprint.py`, which parses the fenced blocks below.
+The pre-commit hook runs it over the staged files and CI runs it over the tree.
+
+Punctuation and emoji are handled in code rather than listed here: the em dash
+family and the emoji blocks are matched by pattern, not by word.
+
+## Single words
+
+```banned-words
+delve
+delves
+delved
+delving
+leverage
+leverages
+leveraging
+leveraged
+robust
+robustly
+seamless
+seamlessly
+comprehensive
+comprehensively
+cutting-edge
+harness
+harnesses
+harnessed
+harnessing
+unlock
+unlocks
+unlocked
+unlocking
+elevate
+elevates
+elevated
+elevating
+streamline
+streamlines
+streamlined
+streamlining
+empower
+empowers
+empowered
+empowering
+showcase
+showcases
+showcased
+showcasing
+boast
+boasts
+boasting
+underscore
+underscores
+underscored
+underscoring
+pivotal
+meticulous
+meticulously
+realm
+realms
+landscape
+landscapes
+tapestry
+tapestries
+```
+
+## Phrases
+
+```banned-phrases
+at its core
+it is worth noting
+it's worth noting
+a testament to
+navigating the complexities
+in today's fast-paced
+let us dive in
+let's dive in
+in conclusion
+the key takeaway
+dive deep
+deep dive
+game changer
+game-changing
+best-in-class
+state-of-the-art
+paradigm shift
+```
+
+## Patterns
+
+Written as Python regex, case-insensitive, applied to prose files and to the
+comments and strings in code files.
+
+```banned-regex
+not only .{1,60}? but also
+it is not just .{1,60}?, it is
+it's not just .{1,60}?, it's
+whether you (are|'re) .{1,60}? or
+in the (ever[- ]evolving|rapidly changing) .{0,30}(world|landscape|realm)
+```
+
+## Exceptions
+
+Some of the banned words have legitimate technical uses. The checker skips a hit when the surrounding text matches one of these. Keep this list short: every exception is a hole in the net.
+
+```allowed-contexts
+eval harness
+evaluation harness
+test harness
+agent harness
+harness/
+harness.py
+_harness
+underscore-separated
+leading underscore
+trailing underscore
+double underscore
+financial leverage
+```
+
+## Change log
+
+- 2026-10-07: Copied from trail-scorer-audit's list, fenced blocks unchanged and
+  matching `_factory/BANNED.md` on the same day. That copy's section on tells no
+  pattern catches was left behind, because its examples are about files in
+  trail-scorer-audit and twicerun.

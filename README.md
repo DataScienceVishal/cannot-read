@@ -92,3 +92,20 @@ and only on four benchmarks, through scorers it does not modify.
 
 It also makes no model calls. No predictor here has a model behind it, so the
 whole thing will run on a laptop CPU at no cost.
+
+## Running the checks
+
+There is no code to run yet, only the scaffold. With [uv](https://docs.astral.sh/uv/)
+installed:
+
+```
+uv sync --all-extras
+scripts/install-hooks.sh
+uv run pytest
+uv run ruff check .
+uv run python scripts/check_fingerprint.py
+```
+
+The one test checks that the suite cannot open a network socket.
+`scripts/install-hooks.sh` copies the pre-commit hook into `.git/hooks`, where it
+runs ruff and the word list in `scripts/style-words.md` over every commit.
