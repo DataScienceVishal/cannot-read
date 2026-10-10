@@ -1,7 +1,9 @@
 # cannot-read
 
+[![ci](https://github.com/DataScienceVishal/cannot-read/actions/workflows/ci.yml/badge.svg)](https://github.com/DataScienceVishal/cannot-read/actions/workflows/ci.yml)
+
 Some benchmark headline metrics can be scored well by a program that never looks
-at the input. I am writing that down here before any code exists, so the claim
+at the input. I wrote that down here before any code existed, so the claim
 cannot move to fit whatever the numbers turn out to be.
 
 The claim this repository has to earn: **recall-only and set-overlap headline
