@@ -97,7 +97,7 @@ whole thing will run on a laptop CPU at no cost.
 
 ## Running the checks
 
-There is no code to run yet, only the scaffold. With [uv](https://docs.astral.sh/uv/)
+Nothing runs against a benchmark yet. With [uv](https://docs.astral.sh/uv/)
 installed:
 
 ```
@@ -108,6 +108,9 @@ uv run ruff check .
 uv run python scripts/check_fingerprint.py
 ```
 
-The one test checks that the suite cannot open a network socket.
+The tests check that the suite cannot open a network socket, and that
+`View`, the object a predictor is given, has fields only for the benchmark and
+task names, item ids, the label space and training label counts. Checking that
+an id does not spell out its question is left to each benchmark's adapter.
 `scripts/install-hooks.sh` copies the pre-commit hook into `.git/hooks`, where it
 runs ruff and the word list in `scripts/style-words.md` over every commit.
