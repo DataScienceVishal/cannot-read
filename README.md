@@ -111,6 +111,10 @@ uv run python scripts/check_fingerprint.py
 The tests check that the suite cannot open a network socket, and that
 `View`, the object a predictor is given, has fields only for the benchmark and
 task names, item ids, the label space and training label counts. Checking that
-an id does not spell out its question is left to each benchmark's adapter.
+an id does not spell out its question is left to each benchmark's adapter. The
+tests also run the two predictors written so far, `silent` and `everything`, on
+a hand-built three-item `View` with no scorer behind it, and check that a
+predictor is refused if it skips an item, answers one that is not in the view,
+or gives an answer that is not a tuple of strings.
 `scripts/install-hooks.sh` copies the pre-commit hook into `.git/hooks`, where it
 runs ruff and the word list in `scripts/style-words.md` over every commit.
