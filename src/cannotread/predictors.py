@@ -16,7 +16,9 @@ that. If the adapter took labels from test gold as well, `everything` would hand
 them out.
 
 Whatever runs every predictor should loop over `REGISTRY`, so that none is
-skipped by hand.
+skipped by hand, and should call each one through `predict`, which runs it
+inside `blindness.guarded`. The blindness module docstring says what that
+refuses and what it cannot see.
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Protocol
 
+from cannotread.blindness import guarded
 from cannotread.view import View
 
 Answers = dict[str, tuple[str, ...]]
@@ -49,8 +52,9 @@ def register(name: str) -> Callable[[Predictor], Predictor]:
 def predict(name: str, view: View) -> Answers:
     if name not in REGISTRY:
         raise KeyError(f"no predictor called {name!r}, registered: {sorted(REGISTRY)}")
-    answers = REGISTRY[name](view)
     where = f"{name} on {view.benchmark}/{view.task}"
+    with guarded(where):
+        answers = REGISTRY[name](view)
     # A list of ids would get through the set comparison below.
     if not isinstance(answers, dict):
         raise TypeError(f"{where}: returned {type(answers).__name__}, not a dict")

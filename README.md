@@ -116,5 +116,23 @@ tests also run the two predictors written so far, `silent` and `everything`, on
 a hand-built three-item `View` with no scorer behind it, and check that a
 predictor is refused if it skips an item, answers one that is not in the view,
 or gives an answer that is not a tuple of strings.
+
+`predict` runs every predictor with a Python audit hook switched on
+(`sys.addaudithook`, PEP 578). The hook refuses a predictor if it opens a file,
+lists a directory, connects to a SQLite database, starts a process or opens a
+socket, and still refuses it if it catches the error. Reading Python source and
+compiled files is let through when the import system, or the tokenize module
+that tracebacks read source through, asks for it, because the standard library
+imports some modules lazily and a traceback reads the source it quotes. The
+tests run each registered predictor with the hook on, and a test-only predictor
+tries each of those cheats in turn. Inside the test suite pytest-socket stops an
+internet socket before the hook sees it, so the socket case is tested with a
+Unix socket. The hook is meant to catch a mistake in this repository's own
+predictors, and code written to get round it can. It cannot see a predictor
+reading content that a module already holds in memory, or reading through a C
+extension such as DuckDB, and nothing checks yet that adapters keep fetched data
+out of module globals. A longer list of what it misses is in
+[src/cannotread/blindness.py](src/cannotread/blindness.py).
+
 `scripts/install-hooks.sh` copies the pre-commit hook into `.git/hooks`, where it
 runs ruff and the word list in `scripts/style-words.md` over every commit.
