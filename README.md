@@ -112,14 +112,26 @@ The tests check that the suite cannot open a network socket, and that
 `View`, the object a predictor is given, has fields only for the benchmark and
 task names, item ids, the label space and training label counts. Checking that
 an id does not spell out its question is left to each benchmark's adapter. The
-tests also run the four predictors written so far, `silent`, `everything`,
-`majority` and `prior`, on hand-built `View`s with no scorer behind them, and
-check that a predictor is refused if it skips an item, answers one that is not
-in the view, or gives an answer that is not a tuple of strings. `majority` and
+tests also run the five predictors written so far on hand-built `View`s with
+no scorer behind them. `silent` answers nothing, `everything` gives every label
+in the label space, `majority` gives the commonest training label, `prior`
+draws a label per item in proportion to the training counts, and `uniform`
+draws one per item evenly from the label space. The tests also check that a
+predictor is refused if it skips an item, answers one that is not in the view,
+or gives an answer that is not a tuple of strings. `majority` and
 `prior` never give a label the training split does not show. Where a task has
 no training split, or an empty one, they raise `NotFitted` and do not fall back
 to the label space. Each benchmark's adapter will build the label space, and if
 it took labels from test gold as well, falling back would hand those out.
+`everything` and `uniform` read the label space by definition, so they are only
+as blind as the label space the adapter builds.
+
+`prior` and `uniform` draw at random, so each will be run on 100 seeds and
+reported as its mean over them, with the best seed beside it, labelled as the
+best of 100. The mean is the one that counts, because the best seed is only
+known after scoring every seed against the gold answers. The dated entry in
+[docs/pre-registration.md](docs/pre-registration.md) fixes this before either
+has been run on a benchmark.
 
 `predict` runs every predictor with a Python audit hook switched on
 (`sys.addaudithook`, PEP 578). The hook refuses a predictor if it opens a file,

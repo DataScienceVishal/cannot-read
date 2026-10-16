@@ -57,6 +57,43 @@ def test_prior_depends_on_the_seed_and_not_on_the_order_labels_were_counted_in()
     assert predict("prior", yes_first, seed=1) != predict("prior", yes_first, seed=2)
 
 
+def test_uniform_draws_every_label_in_the_label_space_equally_often() -> None:
+    ids = [f"q{i}" for i in range(3000)]
+    view = View.build("toy", "many", ids, ["yes", "no", "maybe"], ["yes", "no", "yes"])
+    drawn = [label for (label,) in predict("uniform", view, seed=0).values()]
+    for label in ("yes", "no", "maybe"):
+        assert drawn.count(label) / len(drawn) == pytest.approx(1 / 3, abs=0.03)
+
+
+def test_uniform_answers_without_a_training_split() -> None:
+    no_train = View.build("toy", "no_train", ["q0", "q1"], ["a", "b"], None)
+    answers = predict("uniform", no_train, seed=0)
+    assert set(answers) == {"q0", "q1"}
+    assert all(answer in {("a",), ("b",)} for answer in answers.values())
+
+
+def test_uniform_refuses_an_empty_label_space() -> None:
+    view = View.build("toy", "no_labels", ["q0"], [], None)
+    with pytest.raises(ValueError, match="label space is empty"):
+        predict("uniform", view, seed=0)
+
+
+@pytest.mark.parametrize("name", ["prior", "uniform"])
+def test_two_tasks_of_the_same_shape_get_different_draws_from_the_same_seed(name: str) -> None:
+    ids = [f"q{i}" for i in range(50)]
+    first = View.build("toy", "first", ids, ["yes", "no"], ["yes", "no"])
+    second = View.build("toy", "second", ids, ["yes", "no"], ["yes", "no"])
+    assert predict(name, first, seed=1) == predict(name, first, seed=1)
+    assert predict(name, first, seed=1) != predict(name, second, seed=1)
+
+
+def test_draws_at_random_lists_exactly_the_predictors_whose_answers_change_with_the_seed() -> None:
+    ids = [f"q{i}" for i in range(50)]
+    view = View.build("toy", "seeds", ids, ["yes", "no"], ["yes", "no", "no"])
+    changes = {n for n in REGISTRY if predict(n, view, seed=0) != predict(n, view, seed=1)}
+    assert changes == predictors.DRAWS_AT_RANDOM == {"prior", "uniform"}
+
+
 @pytest.mark.parametrize("name", ["majority", "prior"])
 @pytest.mark.parametrize(
     ("counts", "reason"),
@@ -77,6 +114,7 @@ def test_every_predictor_is_registered_under_its_name() -> None:
     assert REGISTRY["everything"] is predictors.everything
     assert REGISTRY["majority"] is predictors.majority
     assert REGISTRY["prior"] is predictors.prior
+    assert REGISTRY["uniform"] is predictors.uniform
 
 
 def test_a_name_cannot_be_registered_twice() -> None:

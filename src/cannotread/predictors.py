@@ -18,12 +18,18 @@ them out.
 `majority` and `prior` are fitted on the training label counts and nothing
 else, so a label in the label space with no training row is never given by
 either. Where there is no training split, or one with no labels, they raise
-`NotFitted` and do not fall back to the label space, which is the one place a
-label seen only in test gold could come in. The pre-registration has `scalr`
+`NotFitted` and do not fall back to the label space, which is where a label
+seen only in test gold could come in. `uniform` draws from the label space by
+definition, so like `everything` it is only as blind as the label space the
+adapter builds. The pre-registration has `scalr`
 reported as not fitted; nothing catches `NotFitted` and reports it yet.
 
 Every predictor takes a seed, including the ones that ignore it, so that a run
-has to say which seed it used. Only `prior` draws at random so far.
+has to say which seed it used. `prior` and `uniform` draw at random and are
+registered in `DRAWS_AT_RANDOM`, which is how `seeds.over_seeds` knows to run
+them once per seed and the others once. Both seed their generator with the
+benchmark and task names as well as the seed, so that two tasks with the same
+number of items and labels do not get the same draws.
 
 Whatever runs every predictor should loop over `REGISTRY`, so that none is
 skipped by hand, and should call each one through `predict`, which runs it
@@ -48,17 +54,20 @@ class Predictor(Protocol):
 
 
 REGISTRY: dict[str, Predictor] = {}
+DRAWS_AT_RANDOM: set[str] = set()
 
 
 class NotFitted(ValueError):
     pass
 
 
-def register(name: str) -> Callable[[Predictor], Predictor]:
+def register(name: str, *, draws_at_random: bool = False) -> Callable[[Predictor], Predictor]:
     def add(predictor: Predictor) -> Predictor:
         if name in REGISTRY:
             raise ValueError(f"a predictor called {name!r} is already registered")
         REGISTRY[name] = predictor
+        if draws_at_random:
+            DRAWS_AT_RANDOM.add(name)
         return predictor
 
     return add
@@ -96,6 +105,12 @@ def everything(view: View, *, seed: int) -> Answers:
     return {item_id: view.label_space for item_id in view.item_ids}
 
 
+def _generator(view: View, seed: int) -> random.Random:
+    # A str seed goes through SHA-512 and never through hash(), so the draws do not
+    # depend on PYTHONHASHSEED.
+    return random.Random(f"{view.benchmark}/{view.task}/{seed}")
+
+
 def _training_counts(view: View) -> Mapping[str, int]:
     where = f"{view.benchmark}/{view.task}"
     if view.train_label_counts is None:
@@ -122,13 +137,23 @@ def majority(view: View, *, seed: int) -> Answers:
     return {item_id: (label,) for item_id in view.item_ids}
 
 
-@register("prior")
+@register("prior", draws_at_random=True)
 def prior(view: View, *, seed: int) -> Answers:
     counts = _training_counts(view)
     # Read in label-space order, so the draws do not depend on the order the
     # adapter happened to count the training rows in.
     labels = [label for label in view.label_space if counts.get(label, 0) > 0]
-    draws = random.Random(seed).choices(
+    draws = _generator(view, seed).choices(
         labels, weights=[counts[label] for label in labels], k=len(view.item_ids)
     )
+    return {item_id: (label,) for item_id, label in zip(view.item_ids, draws, strict=True)}
+
+
+@register("uniform", draws_at_random=True)
+def uniform(view: View, *, seed: int) -> Answers:
+    # Needs no training split, so unlike `prior` it answers on `scalr`, and it
+    # gives labels the training split never shows.
+    if not view.label_space:
+        raise ValueError(f"{view.benchmark}/{view.task}: the label space is empty")
+    draws = _generator(view, seed).choices(view.label_space, k=len(view.item_ids))
     return {item_id: (label,) for item_id, label in zip(view.item_ids, draws, strict=True)}

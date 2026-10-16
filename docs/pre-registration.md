@@ -125,6 +125,15 @@ the five LegalBench tasks are the one place in the live benchmarks where a floor
 would fit the claim as worded. Changing the wording now, before anything is
 measured, would be fitting the claim to a guess about the result.
 
+Added 2026-10-16, before `prior` or `uniform` has been run on any benchmark.
+Each of the two is run on 100 seeds, 0 to 99, and its mean over those seeds is
+the number that goes into a floor. The best seed is reported beside the mean as
+the best of 100 and is never used as the floor, because it is picked after
+every seed has been scored against test gold. The predictors that ignore the
+seed are run once. Every seed is combined with the benchmark and task names, so
+two tasks with the same number of items and labels do not share their draws.
+`src/cannotread/seeds.py` has the reasoning.
+
 ## Things noticed in the scorers that are not properties
 
 At `10be1b6`, `successor_liability` is in `EXACT_MATCH_BALANCED_ACC_TASKS`, and

@@ -34,7 +34,7 @@ VIEWS = [
 
 def test_the_registry_holds_the_predictors_written_so_far() -> None:
     # With an empty registry the test below would be skipped and the suite stay green.
-    assert {"silent", "everything", "majority", "prior"} <= set(REGISTRY)
+    assert {"silent", "everything", "majority", "prior", "uniform"} <= set(REGISTRY)
 
 
 @pytest.mark.parametrize("view", VIEWS, ids=[v.task for v in VIEWS])
