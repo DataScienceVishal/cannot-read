@@ -108,13 +108,23 @@ uv run ruff check .
 uv run python scripts/check_fingerprint.py
 ```
 
+An adapter is the code that reads one benchmark, and none exists yet.
+`src/cannotread/adapter.py` says what each will have to provide: the benchmark's
+name, its task names, a `View` per task, and a `score` that takes a predictor's
+answers on a task and returns that task's metrics. `checked_view` refuses a task
+the adapter does not list, and a `View` that names a different benchmark or task
+from the one asked for, because a mislabelled view would file one task's scores
+under another's. Nothing calls it outside the tests until the first adapter
+exists. `tests/test_adapter.py` runs every predictor through a fake adapter
+whose gold answers stay in the test file and never go into a `View`.
+
 The tests check that the suite cannot open a network socket, and that
 `View`, the object a predictor is given, has fields only for the benchmark and
 task names, item ids, the label space and training label counts. Checking that
-an id does not spell out its question is left to each benchmark's adapter. The
-tests also run the five predictors written so far on hand-built `View`s with
-no scorer behind them. `silent` answers nothing, `everything` gives every label
-in the label space, `majority` gives the commonest training label, `prior`
+an id does not spell out its question is left to each benchmark's adapter.
+`tests/test_predictors.py` runs the five predictors written so far on hand-built
+`View`s with no scorer behind them. `silent` answers nothing, `everything` gives
+every label in the label space, `majority` gives the commonest training label, `prior`
 draws a label per item in proportion to the training counts, and `uniform`
 draws one per item evenly from the label space. The tests also check that a
 predictor is refused if it skips an item, answers one that is not in the view,
