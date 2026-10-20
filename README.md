@@ -160,5 +160,13 @@ extension such as DuckDB, and nothing checks yet that adapters keep fetched data
 out of module globals. A longer list of what it misses is in
 [src/cannotread/blindness.py](src/cannotread/blindness.py).
 
+`src/cannotread/fetch.py` refuses a downloaded file whose SHA-256 is not the
+one pinned, before anything is written to disk. A pin is a URL, the commit or
+CodaLab bundle id it is at, and the digest, and a branch name such as `main` is
+refused as a revision. `fetch` and `verified_bytes` hand back the bytes they
+hashed and not a path, so a stored file edited after fetching is refused the
+next time it is asked for. The tests fetch from `file://` URLs, since the suite
+cannot open an internet socket. No adapter pins a real file yet.
+
 `scripts/install-hooks.sh` copies the pre-commit hook into `.git/hooks`, where it
 runs ruff and the word list in `scripts/style-words.md` over every commit.
