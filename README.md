@@ -168,5 +168,15 @@ hashed and not a path, so a stored file edited after fetching is refused the
 next time it is asked for. The tests fetch from `file://` URLs, since the suite
 cannot open an internet socket. No adapter pins a real file yet.
 
+Checking a scorer's digest and then importing it by path is not enough. Python
+can run a cached `.pyc` in place of the source whenever the cache's recorded
+mtime and size match the source file's, and then the digest describes a file
+that did not run. trail-scorer-audit's first loader had this bug. So `load_scorer`, in
+`src/cannotread/scorer.py`, compiles the bytes `verified_bytes` hashed and
+executes them as a new module, and a stored scorer with one byte changed is
+refused before any of it runs. The module is never named `__main__`, so the
+scorer's command-line block does not run. This only works for a scorer that is
+one file, which BFCL's and HumanEval's are not.
+
 `scripts/install-hooks.sh` copies the pre-commit hook into `.git/hooks`, where it
 runs ruff and the word list in `scripts/style-words.md` over every commit.
