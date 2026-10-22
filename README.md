@@ -87,10 +87,23 @@ It is not a general tool that audits any benchmark you point it at. That has
 been done recently and at a much larger scale. BenchJack (Wang et al., arXiv
 2605.12673, May 2026) built an automated system for finding reward hacks in
 agent benchmarks, and Automated Benchmark Auditing (arXiv 2605.26079, May 2026)
-used an agentic framework to look for broken tasks across 168 benchmarks, such
-as incomplete environment specifications and limited grading logic. This
-repository looks at one narrower thing, the arithmetic of the headline metric,
-and only on four benchmarks, through scorers it does not modify.
+used an agentic framework to look across 168 benchmarks for broken tasks, such
+as ones with incomplete environment specifications or limited grading logic.
+This repository looks at one narrower thing, the arithmetic of the headline
+metric, and only on four benchmarks, through scorers it does not modify.
+
+Part of BenchJack overlaps with this repository directly. Item L3 of its
+Agent-Eval Checklist (Appendix C.5) tells benchmark designers to run a null
+agent that returns empty responses and to treat any task scoring above zero as
+a flaw, and its example of weak string matching sends one fixed string, the
+same for every task, through WebArena's unmodified scorer. Both are input-blind
+predictors. Neither is set against the published best, which is the comparison
+this repository is meant to make. The L3 rule also assumes that doing nothing
+should never score. On SQuAD v2.0's unanswerable questions an empty answer is
+the correct answer, and BFCL's irrelevance categories reward declining to call
+a function, so on both the question is how much of the headline doing nothing
+buys. The details are in
+[docs/related-work.md](docs/related-work.md).
 
 It also makes no model calls. No predictor here has a model behind it, so the
 whole thing will run on a laptop CPU at no cost.
